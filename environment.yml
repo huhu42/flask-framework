@@ -1,0 +1,12 @@
+name: myproject  # overridden at install, so this is for your use with conda env
+dependencies:
+  - flask
+  - gunicorn==19.9.0
+  - requests==2.20.0
+  - pandas
+  - bokeh
+  - dill
+  - jinja2
+  - pip
+  - simplejson
+  - quandl
