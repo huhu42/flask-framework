@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url
+from flask import Flask, render_template, request, redirect
 from flask_wtf import FlaskForm
 import quandl
 import pandas as pd
@@ -35,7 +35,7 @@ def get_data(form):
   for feature in request.form.get_list('features'):'''
 
 
-@app.route('/index', method = ['GET', 'POST'])
+@app.route('/', method = ['GET', 'POST'])
 def index():
   if request.method == 'GET':
     return render_template('index.html')
