@@ -7,3 +7,6 @@ flask
 jinja2
 pip
 simplejson
+flask_wtf
+wtforms
+quandl
