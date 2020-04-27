@@ -27,20 +27,22 @@ def index():
     if request.method == 'GET':
         return render_template('index.html')
 
-    app.vars['ticker'] = request.form['ticker'].upper()
+    ticker_ = request.form['ticker'].upper()
     app.vars['features'] = [feat[i] for i in range(4) if feat[i] in request.form.values()]
 
-    return redirect('/graph')
-
-@app.route('/graph', methods=['GET', 'POST'])
-def graph():
-    #get the data frame
-    df = quandl.get_table('WIKI/PRICES', ticker=app.vars['ticker'],
+    df = quandl.get_table('WIKI/PRICES', ticker =ticker_,
                           qopts={'columns': ['ticker', 'date', 'open', 'high', 'low', 'close']},
                           date={'gte': '2015-12-31', 'lte': '2016-12-31'})
 
-    p = figure(plot_width=450, plot_height=450, title=app.vars['ticker'], x_axis_type="datetime")
+    script, div = graph(df, ticker_)
 
+    return render_template('graph.html', bv=bv, ticker=ticker_,
+                         yrtag='2015',
+                         script=script, div=div)
+
+def graph(df, ticker_var):
+
+    p = figure(plot_width=450, plot_height=450, title=ticker_var, x_axis_type="datetime")
 
     if 'High' in app.vars['features']:
         p.line(df.date, df.high, line_width=2, line_color='#00cc00', legend_label='Daily Highs')
@@ -61,9 +63,7 @@ def graph():
     p.yaxis.axis_label = "Price ($)"
 
     script, div = components(p)
-    return render_template('graph.html', bv=bv, ticker=app.vars['ticker'],
-                         yrtag='2015',
-                         script=script, div=div)
+    return script, div
 
 
 @app.errorhandler(500)
