@@ -1,26 +1,31 @@
-
 <!doctype html>
-<title>Stock Price Visualization</title>
-<link rel=stylesheet type=text/css href='{{ url_for('static',filename='mystyle.css')}}'>
-<div class=page>
-  <h1>Stock Ticker</h1>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Stock Price Getter</title>
+	</head>
+	<div class=page>
+  			<h1>Get Stock Price</h1>
+  			<div class=metanav>
 
-  <div class=metanav>
+    			<h2>Please enter a stock ticker and check the features to be displayed</h2>
 
-    Please enter a stock ticker
+    			<form id='input' method='post' action='index'>
+	  			<p>
+					Ticker: <input type='text' name='ticker' />
+	  			</p>
+	  			<p>
+	  				<input type="checkbox" name='feat1' value='Open'>Opening Price<br>
+					<input type="checkbox" name='feat2' value='Close'>Closing Price<br>
+					<input type="checkbox" name='feat3' value='High'>Daily High<br>
+					<input type="checkbox" name='feat4' value='Low'>Daily Low<br>
+	  			</p>
+	  			<p>
+	    			<input type="submit" value="Submit">
+	  			</p>
+				</form>
 
-    <h4>
-      <form id='input' method='post' action='index' >
-        <p>
-          Ticker Symbol: <input type='text' name='ticker' />  
-          Ticker Symbol: <input type='text' name='ticker' />
-
-        </p>
-
-        <p>
-          <input type='submit' value='Submit' />
-        </p>
-      </form>
-    </h4>
-  </div>
-</div>
+  			</div>
+		</div>
+	</body>
+</html>

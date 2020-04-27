@@ -1,58 +1,76 @@
-from flask import Flask, render_template, request, redirect
-from flask_wtf import FlaskForm
 import quandl
-import pandas as pd
+from flask import Flask, render_template, request, redirect
+import numpy as np
+import bokeh
+from bokeh.plotting import figure
 from bokeh.embed import components
-from boheh.plotting import figure
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
 import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ['FLASK_SECRET']
+#app.config['SECRET_KEY'] = 'T\x1a\xe2:\xf7\xa4\xdf:ap\xb6\xf9'
+quandl.ApiConfig.api_key = os.environ['QUANDL_API_KEY']
+#quandl.ApiConfig.api_key = 'aWCvshwssbNM1vnHqjR7'
 
 
-class InputForm(FlaskForm):
-  ticker = StringField('Ticker', validators=[DataRequired()])
-  features = StringField('features')
-  submit = SubmitField('Submit')
+bv = bokeh.__version__
+
+app.vars = {}
+feat = ['Open', 'Close', 'High', 'Low']
 
 
-def get_data(form):
-  quandl.ApiConfig.api_key = os.environ['QUANDL_API_KEY']
-  colors = ['blue', 'red', 'orange', 'red']
+@app.route('/')
+def main():
+    return redirect('/index')
 
-  data = quandl.get_table('WIKI/PRICES', ticker = request.form.get('ticker'),
-  qopts = {'columns': ['ticker', 'date', 'close', 'adj_close', 'open', 'adj_open' ]},\
-  date = {'gte': '2015-12-31', 'lte': '2016-12-31'},pageinate = True)
-  data = data.set_index('date')
-
-  return data
-
-
-  '''p3 = figure(x_axis_type='datetime', title = 'Showing Price For: '+ request.form.get('ticker') + ' 2016')
-  c = 0
-  for feature in request.form.get_list('features'):'''
-
-
-@app.route('/', method = ['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 def index():
-  if request.method == 'GET':
-    return render_template('index.html')
+    if request.method == 'GET':
+        return render_template('index.html')
 
-  #get data from input
-  data = request.form.get('submit')
-  #plot data returned
+    app.vars['ticker'] = request.form['ticker'].upper()
+    app.vars['features'] = [feat[i] for i in range(4) if feat[i] in request.form.values()]
 
-  #render plot
+    return redirect('/graph')
+
+@app.route('/graph', methods=['GET', 'POST'])
+def graph():
+    #get the data frame
+    df = quandl.get_table('WIKI/PRICES', ticker=app.vars['ticker'],
+                          qopts={'columns': ['ticker', 'date', 'open', 'high', 'low', 'close']},
+                          date={'gte': '2015-12-31', 'lte': '2016-12-31'})
+
+    p = figure(plot_width=450, plot_height=450, title=app.vars['ticker'], x_axis_type="datetime")
 
 
+    if 'High' in app.vars['features']:
+        p.line(df.date, df.high, line_width=2, line_color='#00cc00', legend_label='Daily Highs')
+    if 'Low' in app.vars['features']:
+        p.line(df.date, df.low, line_width=2, line_color="#ffff00", legend_label='Daily Lows')
+    if 'High' in app.vars['features'] and 'Low' in app.vars['features']:
+        x_ = np.array([df.date, df.date[::-1]]).flatten()
+        y_ = np.array([df.high, df.low[::-1]]).flatten()
+        p.patch(x_, y_, alpha=0.3, color="gray", legend_label='Range (High/Low)')
+    if 'Open' in app.vars['features']:
+        p.line(df.date, df.open, line_width=2, legend_label='Opening price')
+    if 'Close' in app.vars['features']:
+        p.line(df.date, df.close, line_width=2, line_color="#FB8072", legend_label='Closing price')
+
+    p.legend.location = "bottom_right"
+
+    p.xaxis.axis_label = "Date"
+    p.yaxis.axis_label = "Price ($)"
+
+    script, div = components(p)
+    return render_template('graph.html', bv=bv, ticker=app.vars['ticker'],
+                         yrtag='2015',
+                         script=script, div=div)
 
 
+@app.errorhandler(500)
+def error_handler(e):
+    return render_template('error.html')
 
-@app.route('/about')
-def about():
-  return render_template('about.html')
 
 if __name__ == '__main__':
-  app.run(port=33507)
+    app.run(port=33507, debug=True)
