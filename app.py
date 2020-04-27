@@ -2,15 +2,14 @@ import quandl
 from flask import Flask, render_template, request, redirect
 import numpy as np
 import bokeh
-from bokeh.plotting import figure
 from bokeh.embed import components
+from bokeh.plotting import figure
 import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ['FLASK_SECRET']
-#app.config['SECRET_KEY'] = 'T\x1a\xe2:\xf7\xa4\xdf:ap\xb6\xf9'
+
 quandl.ApiConfig.api_key = os.environ['QUANDL_API_KEY']
-#quandl.ApiConfig.api_key = 'aWCvshwssbNM1vnHqjR7'
 
 
 bv = bokeh.__version__
